@@ -25,11 +25,28 @@ if (!hasValidScheme) {
   process.exit(1);
 }
 
+console.log("Attempting to connect to MongoDB Atlas...");
+console.log(`Connection string: ${MONGO_URI.replace(/\/\/([^:]+):([^@]+)@/, '//$1:****@')}`);
+
 mongoose
-  .connect(MONGO_URI)
-  .then(() => console.log("MongoDB connected"))
+  .connect(MONGO_URI, {
+    serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+  })
+  .then(() => {
+    console.log("✅ MongoDB connected successfully!");
+    console.log(`Connected to database: ${mongoose.connection.name}`);
+  })
   .catch((err) => {
-    console.error("Failed to connect to MongoDB:", err);
+    console.error("❌ Failed to connect to MongoDB:");
+    console.error("Error name:", err.name);
+    console.error("Error message:", err.message);
+    if (err.reason) {
+      console.error("Reason:", err.reason);
+    }
+    console.error("\n⚠️  Common solutions:");
+    console.error("1. Check if your IP address is whitelisted in MongoDB Atlas");
+    console.error("2. Verify your username and password are correct");
+    console.error("3. Ensure your cluster is active and running");
     process.exit(1);
   });
 
